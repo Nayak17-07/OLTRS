@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: oltrs-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: oltrs_db
+    ports:
+      - "3306:3306"
+    networks:
+      - oltrs-net
+
+  web:
+    image: mukeshnaik17/oltrs-app:latest
+    container_name: oltrs-web
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_NAME: oltrs_db
+      DB_USER: root
+      DB_PASS: root
+    networks:
+      - oltrs-net
+
+  nagios:
+    image: jasonrivers/nagios:latest
+    container_name: oltrs-nagios
+    ports:
+      - "8081:80"
+    environment:
+      NAGIOSADMIN_USER: nagiosadmin
+      NAGIOSADMIN_PASS: nagiosadmin
+    depends_on:
+      - web
+      - db
+    networks:
+      - oltrs-net
+
+networks:
+  oltrs-net:
+    driver: bridge
